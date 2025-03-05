@@ -1,0 +1,23 @@
+name: pull request
+on: pull_request
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo test
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo build
+  status-check:
+    runs-on: ubuntu-24.04
+    needs:
+      - test
+      - build
+    if: always()
+    permissions:
+      contents: read # To get the workflow content by GitHub API
+    steps:
+      - uses: suzuki-shunsuke/required-status-check-action@latest
+        with:
+          needs: ${{ toJson(needs) }}
