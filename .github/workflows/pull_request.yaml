@@ -1,6 +1,20 @@
 name: pull request
 on: pull_request
 jobs:
+  path-filter:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      workflow: ${{steps.changes.outputs.workflow}}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: changes
+        with:
+          filters: |
+            workflow:
+              - .github/workflows/pull_request.yaml
   before-test:
     runs-on: ubuntu-24.04
     permissions: {}
@@ -39,6 +53,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs:
+      - path-filter
       - test
       - build
       - check
@@ -49,6 +64,7 @@ jobs:
       - uses: suzuki-shunsuke/required-status-check-action@latest
         with:
           needs: ${{ toJson(needs) }}
+          check_workflow: ${{ needs.path-filter.outputs.workflow }}
   merge:
     runs-on: ubuntu-24.04
     permissions: {}

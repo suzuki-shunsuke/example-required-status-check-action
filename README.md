@@ -267,4 +267,47 @@ jobs:
 
 </details>
 
+![image](https://github.com/user-attachments/assets/fa61ae57-731e-48c7-b972-cc0b65f090b5)
+
 ## Example 4. Run workflow check only when workflow is changed
+
+By default, `required-status-check-action` gets the workflow file and checks jobs' `needs`.
+But in general, you don't need to check it unless the workflow file is changed.
+
+So you can skip the check by the input `check_workflow`.
+
+The action [dorny/paths-filter](https://github.com/dorny/paths-filter) is useful.
+
+```yaml
+jobs:
+  path-filter:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      workflow: ${{steps.changes.outputs.workflow}}
+    steps:
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: changes
+        with:
+          filters: |
+            workflow:
+              - .github/workflows/pull_request.yaml
+  status-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - path-filter
+      - test
+      - build
+      - check
+    if: always()
+    permissions:
+      contents: read # To get the workflow content by GitHub API
+    steps:
+      - uses: suzuki-shunsuke/required-status-check-action@latest
+        with:
+          needs: ${{ toJson(needs) }}
+          check_workflow: ${{ needs.path-filter.outputs.workflow }}
+```
