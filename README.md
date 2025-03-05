@@ -2,21 +2,21 @@
 
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/example-required-status-check-action/main/LICENSE) | [workflow](.github/workflow/pull_request.yaml)
 
-Example of [required-status-check-action](https://github.com/suzuki-shunsuke/required-status-check-action)
+This repository is an example of [required-status-check-action](https://github.com/suzuki-shunsuke/required-status-check-action)
 
-## Configure Branch Rulesets
+## 1. Configure Branch Rulesets
 
 1. Enable `Require status checks to pass`
 1. Add `status-check` to `Status checks that are required`
 
 ![image](https://github.com/user-attachments/assets/08bd3e7d-5267-44f4-8bb6-c1afe4ccc721)
 
-## Example 1
+## 2. Set up the workflow
 
 ```mermaid
 graph LR;
-    Test-->status-check;
-    Build-->status-check;
+    test-->status-check;
+    build-->status-check;
 ```
 
 Set up the workflow.
@@ -85,7 +85,7 @@ Then all jobs succeed. `status-check` succeeds because `test` and `build` succee
 
 ![image](https://github.com/user-attachments/assets/5646e20b-ca13-402b-80c4-4121db5195b7)
 
-## Example 2. A invalid
+## 3. Add a new job
 
 Let's add a new job `check`.
 
@@ -142,7 +142,7 @@ Then all jobs except for `status-check` pass but `status-check` fails because `c
 Error: jobs check should be added to the needs of status-check
 ```
 
-Then let's add `check` to `status-check`'s `needs`.
+To solve the error, let's add `check` to `status-check`'s `needs`.
 
 ```yaml
   status-check:
@@ -158,11 +158,9 @@ Then all jobs pass.
 
 ![image](https://github.com/user-attachments/assets/a4d7d3a7-a0b0-460b-b813-abb3866044a2)
 
-## Example 3. Add a job
+## 4. Ignore some jobs
 
 Maybe you want to run any jobs after `status-check`.
-It's no problem.
-
 Let's add a job `merge` and add `status-check` to the job's `needs`.
 
 ```yaml
@@ -178,98 +176,49 @@ Let's add a job `merge` and add `status-check` to the job's `needs`.
           FOO: ${{vars.FOO}}
 ```
 
-![image](https://github.com/user-attachments/assets/c9da0f8d-cba2-434d-b3f2-16d325a2db83)
-
-`status-check` passes as expected.
-
-## Indirect dependencies
-
-Let's add the job `before-test` and `notify`.
-The dependency between these jobs and `status-check` is indirect, but there is no problem.
-
-<details>
-<summary>workflow</summary>
+Then `status-check` fails because `merge` isn't included in `needs` of `status-check`.
+To resolve the error, please add `merge` to `ignored_jobs` of `status-check`.
 
 ```yaml
-name: pull request
-on: pull_request
-jobs:
-  before-test:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
-  test:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    needs:
-      - before-test
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
-  build:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
-  check:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
+- uses: suzuki-shunsuke/required-status-check-action@latest
+  with:
+    needs: ${{ toJson(needs) }}
+    ignored_jobs: |
+      merge
+```
+
+Then `status-check` passes.
+
+You can ignore multiple jobs.
+
+```yaml
+    ignored_jobs: |
+      merge
+      after-merge
+```
+
+## Indirect dependencies aren't allowed
+
+Let's say `status-check` depends on `pre-test` indirectly.
+
+```mermaid
+graph LR;
+    pre-test-->test;
+    test-->status-check;
+```
+
+In that case, you need to add `pre-test` to `needs` of `status-check` because `require-status-check-action` may pass even if `pre-test` fails.
+
+```yaml
   status-check:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     needs:
+      - pre-test
       - test
-      - build
-      - check
-    if: always()
-    permissions:
-      contents: read # To get the workflow content by GitHub API
-    steps:
-      - uses: suzuki-shunsuke/required-status-check-action@latest
-        with:
-          needs: ${{ toJson(needs) }}
-  merge:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    needs:
-      - status-check
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
-
-  notify:
-    runs-on: ubuntu-24.04
-    permissions: {}
-    timeout-minutes: 10
-    needs:
-      - merge
-    steps:
-      - run: test -n "$FOO"
-        env:
-          FOO: ${{vars.FOO}}
 ```
 
-</details>
-
-![image](https://github.com/user-attachments/assets/fa61ae57-731e-48c7-b972-cc0b65f090b5)
-
-## Example 4. Run workflow check only when workflow is changed
+## Run workflow check only when workflow is changed
 
 By default, `required-status-check-action` gets the workflow file and checks jobs' `needs`.
 But in general, you don't need to check it unless the workflow file is changed.
