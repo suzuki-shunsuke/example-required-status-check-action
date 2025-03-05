@@ -197,7 +197,9 @@ To resolve the error, please add `merge` to `ignored_jobs` of `status-check`.
 
 Then `status-check` passes.
 
-You can ignore multiple jobs.
+![image](https://github.com/user-attachments/assets/ac7fc4d7-17c7-4401-9386-a8e19d9a0eca)
+
+You can also ignore multiple jobs.
 
 ```yaml
     ignored_jobs: |
