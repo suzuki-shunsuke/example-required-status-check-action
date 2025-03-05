@@ -39,7 +39,6 @@ jobs:
       - uses: suzuki-shunsuke/required-status-check-action@latest
         with:
           needs: ${{ toJson(needs) }}
-          check_workflow: ${{ needs.path-filter.outputs.workflow }}
   merge:
     runs-on: ubuntu-24.04
     permissions: {}
