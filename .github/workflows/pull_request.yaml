@@ -39,3 +39,13 @@ jobs:
       - uses: suzuki-shunsuke/required-status-check-action@latest
         with:
           needs: ${{ toJson(needs) }}
+  merge:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - status-check
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}

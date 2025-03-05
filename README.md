@@ -69,7 +69,7 @@ The job `test` and `build` fail, so `status-check` fails.
 
 Then set the variable `FOO` and rerun only `test`.
 
-![image](https://github.com/user-attachments/assets/1578aef2-529d-4be1-a06a-ee036dc3df0a)
+<img width="635" alt="image" src="https://github.com/user-attachments/assets/1578aef2-529d-4be1-a06a-ee036dc3df0a" />
 
 ![rerun only test](https://github.com/user-attachments/assets/d3f6e31d-380b-4128-b8b1-b18a3506dba4)
 
@@ -136,7 +136,7 @@ Note that `check` isn't included in `status-check`'s `needs` now.
 
 Then all jobs except for `status-check` pass but `status-check` fails because `check` isn't included in `status-check`'s `needs`.
 
-<img width="686" alt="image" src="https://github.com/user-attachments/assets/1c0f338c-7db0-483e-835b-3e401293308c" />
+![image](https://github.com/user-attachments/assets/1c0f338c-7db0-483e-835b-3e401293308c)
 
 ```
 Error: jobs check should be added to the needs of status-check
@@ -156,8 +156,26 @@ Then let's add `check` to `status-check`'s `needs`.
 
 Then all jobs pass.
 
-
+![image](https://github.com/user-attachments/assets/a4d7d3a7-a0b0-460b-b813-abb3866044a2)
 
 ## Example 3. Add a job
+
+Maybe you want to run any jobs after `status-check`.
+It's no problem.
+
+Let's add a job `merge` and add `status-check` to the job's `needs`.
+
+```yaml
+  merge:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - status-check
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+```
 
 ## Example 4. Run workflow check only when workflow is changed
