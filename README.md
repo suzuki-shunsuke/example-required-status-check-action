@@ -69,7 +69,7 @@ The job `test` and `build` fail, so `status-check` fails.
 
 Then set the variable `FOO` and rerun only `test`.
 
-<img width="635" alt="image" src="https://github.com/user-attachments/assets/1578aef2-529d-4be1-a06a-ee036dc3df0a" />
+![image](https://github.com/user-attachments/assets/1578aef2-529d-4be1-a06a-ee036dc3df0a)
 
 ![rerun only test](https://github.com/user-attachments/assets/d3f6e31d-380b-4128-b8b1-b18a3506dba4)
 
