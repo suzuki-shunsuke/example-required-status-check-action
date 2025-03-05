@@ -39,6 +39,8 @@ jobs:
       - uses: suzuki-shunsuke/required-status-check-action@latest
         with:
           needs: ${{ toJson(needs) }}
+          ignored_jobs: |
+            merge
   merge:
     runs-on: ubuntu-24.04
     permissions: {}
