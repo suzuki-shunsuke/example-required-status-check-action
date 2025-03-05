@@ -134,6 +134,30 @@ jobs:
 
 Note that `check` isn't included in `status-check`'s `needs` now.
 
+Then all jobs except for `status-check` pass but `status-check` fails because `check` isn't included in `status-check`'s `needs`.
+
+<img width="686" alt="image" src="https://github.com/user-attachments/assets/1c0f338c-7db0-483e-835b-3e401293308c" />
+
+```
+Error: jobs check should be added to the needs of status-check
+```
+
+Then let's add `check` to `status-check`'s `needs`.
+
+```yaml
+  status-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - test
+      - build
+      - check
+```
+
+Then all jobs pass.
+
+
+
 ## Example 3. Add a job
 
 ## Example 4. Run workflow check only when workflow is changed

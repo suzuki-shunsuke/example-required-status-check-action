@@ -31,6 +31,7 @@ jobs:
     needs:
       - test
       - build
+      - check
     if: always()
     permissions:
       contents: read # To get the workflow content by GitHub API
