@@ -3,14 +3,19 @@ on: pull_request
 jobs:
   test:
     runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
     steps:
       - run: echo test
   build:
     runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
     steps:
       - run: echo build
   status-check:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs:
       - test
       - build
