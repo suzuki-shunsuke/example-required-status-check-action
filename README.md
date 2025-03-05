@@ -59,10 +59,80 @@ jobs:
 
 The variable `FOO` is used in the workflow, but please don't set the variable first.
 Let's create a pull request, the workflow fails.
-The job `foo` and `bar` fail, so `status-check` fails.
+The job `test` and `build` fail, so `status-check` fails.
 `status-check` fails, so the pull request can't be merged expectedly.
 
+- [commit](https://github.com/suzuki-shunsuke/example-required-status-check-action/pull/3/commits/f40fb97b379273926a8444813ad7c75987360d71)
+- [workflow](https://github.com/suzuki-shunsuke/example-required-status-check-action/actions/runs/13671523965?pr=3)
+
+![image](https://github.com/user-attachments/assets/36fe3c41-400d-48d0-a26c-ce798ab91942)
+
+Then set the variable `FOO` and rerun only `test`.
+
+![image](https://github.com/user-attachments/assets/1578aef2-529d-4be1-a06a-ee036dc3df0a)
+
+![rerun only test](https://github.com/user-attachments/assets/d3f6e31d-380b-4128-b8b1-b18a3506dba4)
+
+Then `test` succeeds but `status-check` fails expectedly because `build` fails.
+
+![image](https://github.com/user-attachments/assets/a214dd3e-00f0-461a-ae70-5402c73fe2ec)
+
+Then `Re-run failed jobs`.
+
+![Re-run failed jobs](https://github.com/user-attachments/assets/2d400304-b5a7-4f11-9364-2c4c25db7251)
+
+Then all jobs succeed. `status-check` succeeds because `test` and `build` succeed.
+
+![image](https://github.com/user-attachments/assets/5646e20b-ca13-402b-80c4-4121db5195b7)
+
 ## Example 2. A invalid
+
+Let's add a new job `check`.
+
+```yaml
+name: pull request
+on: pull_request
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  build:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  check:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  status-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - test
+      - build
+    if: always()
+    permissions:
+      contents: read # To get the workflow content by GitHub API
+    steps:
+      - uses: suzuki-shunsuke/required-status-check-action@latest
+        with:
+          needs: ${{ toJson(needs) }}
+```
+
+Note that `check` isn't included in `status-check`'s `needs` now.
 
 ## Example 3. Add a job
 

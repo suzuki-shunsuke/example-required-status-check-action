@@ -17,6 +17,14 @@ jobs:
       - run: test -n "$FOO"
         env:
           FOO: ${{vars.FOO}}
+  check:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
   status-check:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
