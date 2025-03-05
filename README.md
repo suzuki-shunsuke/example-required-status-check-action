@@ -178,4 +178,93 @@ Let's add a job `merge` and add `status-check` to the job's `needs`.
           FOO: ${{vars.FOO}}
 ```
 
+![image](https://github.com/user-attachments/assets/c9da0f8d-cba2-434d-b3f2-16d325a2db83)
+
+`status-check` passes as expected.
+
+## Indirect dependencies
+
+Let's add the job `before-test` and `notify`.
+The dependency between these jobs and `status-check` is indirect, but there is no problem.
+
+<details>
+<summary>workflow</summary>
+
+```yaml
+name: pull request
+on: pull_request
+jobs:
+  before-test:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  test:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - before-test
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  build:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  check:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+  status-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - test
+      - build
+      - check
+    if: always()
+    permissions:
+      contents: read # To get the workflow content by GitHub API
+    steps:
+      - uses: suzuki-shunsuke/required-status-check-action@latest
+        with:
+          needs: ${{ toJson(needs) }}
+  merge:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - status-check
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+
+  notify:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - merge
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+```
+
+</details>
+
 ## Example 4. Run workflow check only when workflow is changed

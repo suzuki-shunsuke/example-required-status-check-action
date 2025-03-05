@@ -1,10 +1,20 @@
 name: pull request
 on: pull_request
 jobs:
+  before-test:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
   test:
     runs-on: ubuntu-24.04
     permissions: {}
     timeout-minutes: 10
+    needs:
+      - before-test
     steps:
       - run: test -n "$FOO"
         env:
@@ -45,6 +55,17 @@ jobs:
     timeout-minutes: 10
     needs:
       - status-check
+    steps:
+      - run: test -n "$FOO"
+        env:
+          FOO: ${{vars.FOO}}
+
+  notify:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    timeout-minutes: 10
+    needs:
+      - merge
     steps:
       - run: test -n "$FOO"
         env:
