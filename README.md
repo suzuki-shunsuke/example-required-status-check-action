@@ -177,6 +177,7 @@ Let's add a job `merge` and add `status-check` to the job's `needs`.
 ```
 
 Then `status-check` fails because `merge` isn't included in `needs` of `status-check`.
+Of course, you can't add `merge` to `needs` of `status-check`.
 To resolve the error, please add `merge` to `ignored_jobs` of `status-check`.
 
 ```yaml
